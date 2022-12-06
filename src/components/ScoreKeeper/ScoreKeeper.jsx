@@ -1,6 +1,7 @@
 import styles from './ScoreKeeper.module.css'
 
-import { useState, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { getValue } from '@testing-library/user-event/dist/utils'
 
 const ScoreKeeper = () => {
   const [tempScore, setTempScore] = useState(0)
@@ -9,21 +10,54 @@ const ScoreKeeper = () => {
 
   const buttonRef = useRef()
 
-  const toggleButtons = (()=> {
+  const toggleButtons = ((bool)=> {
     let buttons = [...buttonRef.current.children]
     buttons.forEach(button => {
-      button.disabled ? button.disabled = false : button.disabled = true
+      button.disabled = bool
     })
   })
 
 
   const [arrow, setArrow] = useState(1) 
 
-  const handleDisk = (evt) => {
+  const handleDisk = () => {
     setTempScore(tempScore - 1)
-    toggleButtons()
-    setRoundScore(...roundScore, [tempScore])
+    toggleButtons(true)
+    setScore(score + tempScore)
   }
+
+  const handleMiss = () => {
+    setTempScore(tempScore + 1)
+    setArrow(arrow + 1)
+    if (arrow === 2) {
+      toggleButtons(true)
+    }
+  }
+
+  const handleHit = () => {
+    toggleButtons(true)
+    if (arrow === 2) {
+      setTempScore(tempScore - .5)
+    } else {
+      setTempScore(0)
+    }
+  }
+
+  const handleNext = () => {
+    toggleButtons(false)
+    setScore(score + tempScore)
+    setTempScore(0)
+    setRoundScore([...roundScore, tempScore])
+  }
+
+  const handlePass = () => {
+    toggleButtons(true)
+    alert('fortune favors the brave')
+  }
+
+  useEffect(()=> {
+    console.log(roundScore)
+  })
 
   return (
     <div className={styles.container}>
@@ -37,11 +71,12 @@ const ScoreKeeper = () => {
     }
       <div ref={buttonRef} className="button-container">
         <button className="calculator" onClick={handleDisk}>Disk</button>
-        <button className="calculator">Hit</button>
-        <button className="calculator">Miss</button>
+        <button className="calculator" onClick={handleHit}>Hit</button>
+        <button className="calculator" onClick={handleMiss}>Miss</button>
       </div>
-      {arrow === 2 ? <button className='calculator'>Pass</button> : null}
+      {arrow === 2 ? <button className='calculator' onClick={handlePass}>Pass</button> : null}
       <h4>Score This Round: {tempScore}</h4>
+      <button onClick={handleNext}>Next Target</button>
     </div>
   )
 }
